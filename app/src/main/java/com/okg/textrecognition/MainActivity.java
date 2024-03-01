@@ -9,6 +9,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.TextureView;
@@ -119,12 +120,32 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "analyzeImage , bitmap is null !!!!!!!");
             return;
         }
-        InputImage inputImage = InputImage.fromBitmap(bitmap, rotationDegrees);
+        InputImage inputImage = InputImage.fromBitmap(bitmap, 90);
         TextRecognizer recognizer = TextRecognition.getClient(new ChineseTextRecognizerOptions.Builder().build());
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text result) {
-                tvContent.setText(result.getText());
+                int blockCount = result.getTextBlocks().size();
+                if (blockCount == 0) {
+                    Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                StringBuffer stringBuffer = new StringBuffer();
+                for (int i = 0; i < blockCount; i++) {
+                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
+                    Rect rect = textBlock.getBoundingBox();
+                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
+                    int lineCount = textBlock.getLines().size();
+                    if (lineCount == 0) {
+                        continue;
+                    }
+                    for (int j = 0; j < lineCount; j++) {
+                        Text.Line textLine = textBlock.getLines().get(j);
+                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+                    }
+                    stringBuffer.append("\n");
+                }
+                tvContent.setText(stringBuffer.toString());
             }
         }).addOnCompleteListener(new OnCompleteListener<Text>() {
             @Override
