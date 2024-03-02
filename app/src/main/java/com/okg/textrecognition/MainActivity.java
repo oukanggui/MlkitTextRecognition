@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -32,6 +33,8 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 
 import org.json.JSONObject;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Mlkit-MainActivity";
     private static int CAMERA_PERMISSION_CODE = 100;
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_IMEI1 = "imei1";
     private static final String KEY_IMEI2 = "imei2";
     private static final String KEY_SN = "sn";
+    private static final String KEY_SN_CHINESE = "序列号";
 
     private static final int TYPE_LAYOUT_CMD = 1;
     private static final int TYPE_LAYOUT_VERTICAL = 2;
@@ -142,27 +146,28 @@ public class MainActivity extends AppCompatActivity {
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text result) {
-                int blockCount = result.getTextBlocks().size();
-                if (blockCount == 0) {
-                    Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                StringBuffer stringBuffer = new StringBuffer();
-                for (int i = 0; i < blockCount; i++) {
-                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
-                    Rect rect = textBlock.getBoundingBox();
-                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
-                    int lineCount = textBlock.getLines().size();
-                    if (lineCount == 0) {
-                        continue;
-                    }
-                    for (int j = 0; j < lineCount; j++) {
-                        Text.Line textLine = textBlock.getLines().get(j);
-                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
-                    }
-                    stringBuffer.append("\n");
-                }
-                tvContent.setText(stringBuffer.toString());
+//                int blockCount = result.getTextBlocks().size();
+//                if (blockCount == 0) {
+//                    Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
+//                    return;
+//                }
+//                StringBuffer stringBuffer = new StringBuffer();
+//                for (int i = 0; i < blockCount; i++) {
+//                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
+//                    Rect rect = textBlock.getBoundingBox();
+//                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
+//                    int lineCount = textBlock.getLines().size();
+//                    if (lineCount == 0) {
+//                        continue;
+//                    }
+//                    for (int j = 0; j < lineCount; j++) {
+//                        Text.Line textLine = textBlock.getLines().get(j);
+//                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+//                    }
+//                    stringBuffer.append("\n");
+//                }
+//                tvContent.setText(stringBuffer.toString());
+                parseText(result);
             }
         }).addOnCompleteListener(new OnCompleteListener<Text>() {
             @Override
@@ -180,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void parseText(Text result) {
+        Log.d(TAG, "parseText: " + result.getText());
         int blockCount = result == null ? 0 : result.getTextBlocks().size();
         if (blockCount == 0) {
             Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
@@ -259,25 +265,199 @@ public class MainActivity extends AppCompatActivity {
         int imeiRectBottom = imeiBlockRect.bottom;
         int imeiRectCenterY = imeiBlockRect.centerY();
         for (int i = 0; i < blockCount; i++) {
-            Rect blockRect = resultText.getTextBlocks().get(i).getBoundingBox();
-            int blockCenterY = blockRect.centerY();
-            // 检测是否是否存在top、bottom存在区域重叠
-            if ((imeiRectCenterY >= blockRect.top) && (imeiRectCenterY <= blockRect.bottom) && (blockCenterY >= imeiRectTop) && (blockCenterY <= imeiRectBottom)) {
-                return true;
+            // 判断block是否包含imei关键字
+            String blockText = resultText.getTextBlocks().get(i).getText();
+            if (isImei(blockText)) {
+                Rect blockRect = resultText.getTextBlocks().get(i).getBoundingBox();
+                int blockCenterY = blockRect.centerY();
+                // 检测是否是否存在top、bottom存在区域重叠
+                if ((imeiRectCenterY >= blockRect.top) && (imeiRectCenterY <= blockRect.bottom) && (blockCenterY >= imeiRectTop) && (blockCenterY <= imeiRectBottom)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     private String parseCMDDeviceInfo(Text resultText) {
-        return "";
+        Log.d(TAG, "=====parseCMDDeviceInfo=====");
+        String imei1 = "";
+        String imei2 = "";
+        String sn = "";
+        int blockCount = resultText.getTextBlocks().size();
+        // 先遍历查找imei，并确定布局方向
+        for (int i = 0; i < blockCount; i++) {
+            Text.TextBlock textBlock = resultText.getTextBlocks().get(i);
+            int lineCount = textBlock.getLines().size();
+            if (lineCount == 0) {
+                continue;
+            }
+            for (int j = 0; j < lineCount; j++) {
+                Text.Line textLine = textBlock.getLines().get(j);
+                String lineText = textLine.getText();
+                // 文本转换为小写
+                lineText = lineText.toLowerCase();
+                Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+                if (lineText.contains(KEY_IMEI)) {
+                    Log.d(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
+                    String[] textArrays = lineText.split(STR_SPLIT);
+                    if (textArrays != null && textArrays.length > 1) {
+                        if (lineText.contains(KEY_IMEI2)) {
+                            imei2 = textArrays[1];
+                        } else {
+                            imei1 = textArrays[1];
+                        }
+                    }
+                } else if (lineText.contains(KEY_SN)) {
+                    Log.d(TAG, "检测到有sn关键字");
+                    String[] textArrays = lineText.split(STR_SPLIT);
+                    if (textArrays != null && textArrays.length > 1) {
+                        sn = textArrays[1];
+                    }
+                }
+            }
+            if (!TextUtils.isEmpty(imei1) && !TextUtils.isEmpty(imei2) && !TextUtils.isEmpty(sn)) {
+                // 已全部获取，提前退出循环
+                break;
+            }
+        }
+        return "imei1 = " + imei1 + "\n" +
+                "imei2 = " + imei2 + "\n" +
+                "sn = " + sn;
     }
 
     private String parseVerticalDeviceInfo(Text resultText) {
-        return "";
+        Log.d(TAG, "=====parseVerticalDeviceInfo=====");
+        String imei1 = "";
+        String imei2 = "";
+        String sn = "";
+        int blockCount = resultText.getTextBlocks().size();
+        // 先遍历查找imei，并确定布局方向
+        for (int i = 0; i < blockCount; i++) {
+            Text.TextBlock textBlock = resultText.getTextBlocks().get(i);
+            Log.d(TAG, "blockText = " + textBlock.getText());
+            int lineCount = textBlock.getLines().size();
+            if (lineCount == 0) {
+                continue;
+            }
+            String firstLineText = textBlock.getLines().get(0).getText();
+            Log.d(TAG, "LineCount=" + lineCount + " ,firstLineText:" + firstLineText);
+            if (TextUtils.isEmpty(firstLineText)) {
+                continue;
+            }
+            firstLineText = firstLineText.toLowerCase();
+            if (firstLineText.contains(KEY_SN) || firstLineText.contains(KEY_SN_CHINESE)) {
+                Log.d(TAG, "检测到有sn/序列号信息");
+                // 下一行为序列号信息
+                sn = getNextBlockLineText(resultText, i);
+            } else if (firstLineText.contains(KEY_IMEI)) {
+                Log.d(TAG, "检测到有imei信息");
+                String nextLineOrBlockText = "";
+                // 先判断本block中是否有imei信息
+                if (lineCount > 1) {
+                    for (int j = 1; j < lineCount; j++) {
+                        String lineText = textBlock.getLines().get(j).getText();
+                        if (isImei(lineText)) {
+                            nextLineOrBlockText = lineText;
+                            break;
+                        }
+                    }
+
+                }
+                if (TextUtils.isEmpty(nextLineOrBlockText)) {
+                    nextLineOrBlockText = getNextBlockLineText(resultText, i);
+                }
+                Log.d(TAG, "nextLineOrBlockText = " + nextLineOrBlockText);
+                if (!TextUtils.isEmpty(nextLineOrBlockText)) {
+                    if (TextUtils.isEmpty(imei1)) {
+                        imei1 = nextLineOrBlockText;
+                    } else {
+                        imei2 = nextLineOrBlockText;
+                    }
+                }
+            }
+            if (!TextUtils.isEmpty(imei1) && !TextUtils.isEmpty(imei2) && !TextUtils.isEmpty(sn)) {
+                // 已全部获取，提前退出循环
+                break;
+            }
+        }
+        return "imei1 = " + imei1 + "\n" +
+                "imei2 = " + imei2 + "\n" +
+                "sn = " + sn;
     }
 
     private String parseHorizontalDeviceInfo(Text resultText) {
+        Log.d(TAG, "=====parseHorizontalDeviceInfo=====");
+        String imei1 = "";
+        String imei2 = "";
+        String sn = "";
+        int blockCount = resultText.getTextBlocks().size();
+        // 先遍历查找imei，并确定布局方向
+        for (int i = 0; i < blockCount; i++) {
+            Text.TextBlock textBlock = resultText.getTextBlocks().get(i);
+            String blockText = textBlock.getText();
+            Log.d(TAG, "blockText = " + blockText);
+            if (TextUtils.isEmpty(blockText)) {
+                continue;
+            }
+            blockText = blockText.toLowerCase();
+            if (blockText.startsWith(KEY_SN) || blockText.contains(KEY_SN_CHINESE)) {
+                Log.d(TAG, "检测到有sn/序列号信息");
+                // 下一行为序列号信息
+                sn = getHorizontalBlockText(resultText, textBlock.getBoundingBox());
+            } else if (blockText.contains(KEY_IMEI)) {
+                String imei = getHorizontalBlockText(resultText,textBlock.getBoundingBox());
+                if (TextUtils.isEmpty(imei1)){
+                    imei1 = imei;
+                }else{
+                    imei2 = imei;
+                }
+            }
+            if (!TextUtils.isEmpty(imei1) && !TextUtils.isEmpty(imei2) && !TextUtils.isEmpty(sn)) {
+                // 已全部获取，提前退出循环
+                break;
+            }
+        }
+        return "imei1 = " + imei1 + "\n" +
+                "imei2 = " + imei2 + "\n" +
+                "sn = " + sn;
+    }
+
+    private String getNextBlockLineText(Text resultText, int currentBlockIndex) {
+        String result = "";
+        if (currentBlockIndex < resultText.getTextBlocks().size() - 1) {
+            Text.TextBlock nextBlock = resultText.getTextBlocks().get((currentBlockIndex + 1));
+            List<Text.Line> nextBlockLines = nextBlock.getLines();
+            if (nextBlockLines != null && nextBlockLines.size() > 0) {
+                result = nextBlockLines.get(0).getText();
+            }
+        }
+        return result;
+    }
+
+    private String getHorizontalBlockText(Text resultText, Rect currentBlockRect) {
+        int blockCount = resultText.getTextBlocks().size();
+        int top = currentBlockRect.top;
+        int bottom = currentBlockRect.bottom;
+        int centerY = currentBlockRect.centerY();
+        for (int i = 0; i < blockCount; i++) {
+            Rect blockRect = resultText.getTextBlocks().get(i).getBoundingBox();
+            int blockCenterY = blockRect.centerY();
+            // 检测是否是否存在top、bottom存在区域重叠
+            if ((centerY >= blockRect.top) && (centerY <= blockRect.bottom) && (blockCenterY >= top) && (blockCenterY <= bottom)) {
+                return resultText.getTextBlocks().get(i).getText();
+            }
+        }
+        Log.e(TAG, "判断为横向，但找不到横向对应的block，请检查程序逻辑");
         return "";
+    }
+
+    private boolean isImei(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return false;
+        }
+        text = text.trim();
+        return text.startsWith("86") || text.startsWith("35") ||
+                text.startsWith("01") || text.startsWith("99");
     }
 }
