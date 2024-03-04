@@ -31,8 +31,6 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 
-import org.json.JSONObject;
-
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -146,26 +144,27 @@ public class MainActivity extends AppCompatActivity {
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text result) {
-//                int blockCount = result.getTextBlocks().size();
-//                if (blockCount == 0) {
-//                    Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-//                StringBuffer stringBuffer = new StringBuffer();
-//                for (int i = 0; i < blockCount; i++) {
-//                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
-//                    Rect rect = textBlock.getBoundingBox();
-//                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
-//                    int lineCount = textBlock.getLines().size();
-//                    if (lineCount == 0) {
-//                        continue;
-//                    }
-//                    for (int j = 0; j < lineCount; j++) {
-//                        Text.Line textLine = textBlock.getLines().get(j);
-//                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
-//                    }
-//                    stringBuffer.append("\n");
-//                }
+                int blockCount = result.getTextBlocks().size();
+                if (blockCount == 0) {
+                    Toast.makeText(MainActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                StringBuffer stringBuffer = new StringBuffer();
+                for (int i = 0; i < blockCount; i++) {
+                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
+                    Rect rect = textBlock.getBoundingBox();
+                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
+                    int lineCount = textBlock.getLines().size();
+                    if (lineCount == 0) {
+                        continue;
+                    }
+                    for (int j = 0; j < lineCount; j++) {
+                        Text.Line textLine = textBlock.getLines().get(j);
+                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+                    }
+                    stringBuffer.append("\n");
+                }
+                Log.d(TAG, "original text = " + stringBuffer.toString());
 //                tvContent.setText(stringBuffer.toString());
                 parseText(result);
             }
@@ -261,17 +260,12 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean detectIsHorizontal(Rect imeiBlockRect, Text resultText) {
         int blockCount = resultText.getTextBlocks().size();
-        int imeiRectTop = imeiBlockRect.top;
-        int imeiRectBottom = imeiBlockRect.bottom;
-        int imeiRectCenterY = imeiBlockRect.centerY();
         for (int i = 0; i < blockCount; i++) {
             // 判断block是否包含imei关键字
             String blockText = resultText.getTextBlocks().get(i).getText();
             if (isImei(blockText)) {
                 Rect blockRect = resultText.getTextBlocks().get(i).getBoundingBox();
-                int blockCenterY = blockRect.centerY();
-                // 检测是否是否存在top、bottom存在区域重叠
-                if ((imeiRectCenterY >= blockRect.top) && (imeiRectCenterY <= blockRect.bottom) && (blockCenterY >= imeiRectTop) && (blockCenterY <= imeiRectBottom)) {
+                if (isRectContainer(imeiBlockRect, blockRect)) {
                     return true;
                 }
             }
@@ -321,9 +315,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
-        return "imei1 = " + imei1 + "\n" +
-                "imei2 = " + imei2 + "\n" +
-                "sn = " + sn;
+        return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
 
     private String parseVerticalDeviceInfo(Text resultText) {
@@ -381,9 +373,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
-        return "imei1 = " + imei1 + "\n" +
-                "imei2 = " + imei2 + "\n" +
-                "sn = " + sn;
+        return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
 
     private String parseHorizontalDeviceInfo(Text resultText) {
@@ -406,10 +396,10 @@ public class MainActivity extends AppCompatActivity {
                 // 下一行为序列号信息
                 sn = getHorizontalBlockText(resultText, textBlock.getBoundingBox());
             } else if (blockText.contains(KEY_IMEI)) {
-                String imei = getHorizontalBlockText(resultText,textBlock.getBoundingBox());
-                if (TextUtils.isEmpty(imei1)){
+                String imei = getHorizontalBlockText(resultText, textBlock.getBoundingBox());
+                if (TextUtils.isEmpty(imei1)) {
                     imei1 = imei;
-                }else{
+                } else {
                     imei2 = imei;
                 }
             }
@@ -418,9 +408,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
-        return "imei1 = " + imei1 + "\n" +
-                "imei2 = " + imei2 + "\n" +
-                "sn = " + sn;
+        return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
 
     private String getNextBlockLineText(Text resultText, int currentBlockIndex) {
@@ -437,14 +425,9 @@ public class MainActivity extends AppCompatActivity {
 
     private String getHorizontalBlockText(Text resultText, Rect currentBlockRect) {
         int blockCount = resultText.getTextBlocks().size();
-        int top = currentBlockRect.top;
-        int bottom = currentBlockRect.bottom;
-        int centerY = currentBlockRect.centerY();
         for (int i = 0; i < blockCount; i++) {
             Rect blockRect = resultText.getTextBlocks().get(i).getBoundingBox();
-            int blockCenterY = blockRect.centerY();
-            // 检测是否是否存在top、bottom存在区域重叠
-            if ((centerY >= blockRect.top) && (centerY <= blockRect.bottom) && (blockCenterY >= top) && (blockCenterY <= bottom)) {
+            if (currentBlockRect != blockRect && isRectContainer(currentBlockRect, blockRect)) {
                 return resultText.getTextBlocks().get(i).getText();
             }
         }
@@ -452,12 +435,27 @@ public class MainActivity extends AppCompatActivity {
         return "";
     }
 
+    private boolean isRectContainer(Rect rect1, Rect rect2) {
+        int top1 = rect1.top;
+        int bottom1 = rect1.bottom;
+        int centerY1 = rect1.centerY();
+        int top2 = rect2.top;
+        int bottom2 = rect2.bottom;
+        int centerY2 = rect2.centerY();
+        if ((centerY1 >= top2) && (centerY1 <= bottom2) && (centerY2 >= top1) && (centerY2 <= bottom1)) {
+            return true;
+        }
+        if ((top1 > top2 && top1 < bottom2) || (bottom1 > top2 && bottom1 < bottom2) || (top2 > top1 && top2 < bottom1) || (bottom2 > top1 && bottom2 < bottom1)) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean isImei(String text) {
         if (TextUtils.isEmpty(text)) {
             return false;
         }
         text = text.trim();
-        return text.startsWith("86") || text.startsWith("35") ||
-                text.startsWith("01") || text.startsWith("99");
+        return text.startsWith("86") || text.startsWith("35") || text.startsWith("01") || text.startsWith("99");
     }
 }
