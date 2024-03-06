@@ -340,7 +340,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 continue;
             }
             firstLineText = firstLineText.toLowerCase();
-            if (firstLineText.contains(KEY_SN_CHINESE)) {
+            if (firstLineText.startsWith(KEY_SN) || firstLineText.contains(KEY_SN_CHINESE)) {
                 Log.d(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getNextBlockLineText(resultText, i);
