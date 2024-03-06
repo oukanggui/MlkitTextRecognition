@@ -195,19 +195,21 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "没有检测到imei信息", Toast.LENGTH_LONG).show();
             return;
         }
+        String resultStr = "";
         switch (layoutType) {
             case TYPE_LAYOUT_CMD:
-                tvContent.setText(parseCMDDeviceInfo(result));
+                resultStr = parseCMDDeviceInfo(result);
                 break;
             case TYPE_LAYOUT_VERTICAL:
-                tvContent.setText(parseVerticalDeviceInfo(result));
+                resultStr = parseVerticalDeviceInfo(result);
                 break;
             case TYPE_LAYOUT_HORIZONTAL:
-                tvContent.setText(parseHorizontalDeviceInfo(result));
+                resultStr = parseHorizontalDeviceInfo(result);
                 break;
             default:
                 break;
         }
+        tvContent.setText(resultStr + "\n" + "layoutType:" + layoutType);
     }
 
 
