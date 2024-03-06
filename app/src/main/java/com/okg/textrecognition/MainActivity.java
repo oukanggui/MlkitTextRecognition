@@ -92,9 +92,9 @@ public class MainActivity extends AppCompatActivity {
                 if (mCameraHelper != null) {
                     mCameraHelper.takePicture(new CameraHelper.OnTakePictureListener() {
                         @Override
-                        public void onTakePicture(Bitmap bitmap, int angle, int rotationDegrees) {
-                            Log.d("CameraMlkit", "onTakePicture , bitmap = " + bitmap + ", angle = " + angle + ",rotationDegrees=" + rotationDegrees);
-                            analyzeImage(bitmap, rotationDegrees);
+                        public void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees) {
+                            Log.d(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
+                            analyzeImage(bitmap, pictureRotationDegrees);
                         }
                     });
                 }
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "analyzeImage , bitmap is null !!!!!!!");
             return;
         }
-        InputImage inputImage = InputImage.fromBitmap(bitmap, 90);
+        InputImage inputImage = InputImage.fromBitmap(bitmap, rotationDegrees);
         TextRecognizer recognizer = TextRecognition.getClient(new ChineseTextRecognizerOptions.Builder().build());
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override

@@ -69,8 +69,14 @@ public class CameraHelper {
 
     private OnTakePictureListener mOnTakePictureListener;
 
-    private int mAngle = 0;
-    private int mRotationDegrees = 0;
+    /**
+     * 图片旋转角度
+     */
+    private int mPictureRotationDegrees = 0;
+    /**
+     * 设备旋转角度
+     */
+    private int mDeviceRotationDegrees = 0;
 
     /**
      * 拍照回调监听器
@@ -79,9 +85,11 @@ public class CameraHelper {
         /**
          * 拍照完成回调,回调于子线程
          *
-         * @param bitmap 图片保存的图片文件
+         * @param bitmap                 图片保存的图片文件
+         * @param pictureRotationDegrees 图片旋转角度
+         * @param deviceRotationDegrees 设备旋转角度
          */
-        void onTakePicture(Bitmap bitmap, int angle, int rotationDegrees);
+        void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees);
     }
 
     public CameraHelper(Activity activity) {
@@ -245,7 +253,7 @@ public class CameraHelper {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 // 不管成功与否，保证均回调
                 if (mOnTakePictureListener != null) {
-                    mOnTakePictureListener.onTakePicture(bitmap, mAngle, mRotationDegrees);
+                    mOnTakePictureListener.onTakePicture(bitmap, mPictureRotationDegrees, mDeviceRotationDegrees);
                 }
                 if (image != null) {
                     image.close();
@@ -318,7 +326,9 @@ public class CameraHelper {
             @Override
             public void onError(@NonNull CameraDevice camera, int error) {
                 // TODO 需要检测这里
-                //mActivity.finish();
+                if (mActivity != null) {
+                    mActivity.finish();
+                }
                 //Toast.makeText(mActivity, "相机打开失败", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "CameraDevice.StateCallback onError : 相机异常 error code=" + error);
                 releaseCamera();
@@ -427,11 +437,13 @@ public class CameraHelper {
             CaptureRequest.Builder takePictureRequest = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             takePictureRequest.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);//自动对焦
             //takePictureRequest.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);//自动爆光
-            mRotationDegrees = mActivity.getWindowManager().getDefaultDisplay().getRotation();
-            mAngle = getJpegOrientation(mCameraManager.getCameraCharacteristics(mCurrentCameraId), mRotationDegrees);
-            Log.d(TAG, "人脸拍照 照片角度angle=" + mAngle);
-            Log.d(TAG, "人脸拍照 rotation=" + mRotationDegrees);
-            takePictureRequest.set(CaptureRequest.JPEG_ORIENTATION, mAngle);
+            // 设备的旋转角度
+            mDeviceRotationDegrees = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+            // 计算图片选装角度
+            mPictureRotationDegrees = getJpegOrientation(mCameraManager.getCameraCharacteristics(mCurrentCameraId), mDeviceRotationDegrees);
+            Log.d(TAG, "takePicture 设备旋转角度=" + mDeviceRotationDegrees);
+            Log.d(TAG, "takePicture 图片旋转角度=" + mPictureRotationDegrees);
+            // takePictureRequest.set(CaptureRequest.JPEG_ORIENTATION, mPictureRotationDegrees);
             Surface surface = mImageReader.getSurface();
             takePictureRequest.addTarget(surface);
             CaptureRequest request = takePictureRequest.build();
@@ -445,6 +457,7 @@ public class CameraHelper {
 
     /**
      * 官方提供的JPEG图片方向算法
+     * 根据设备的旋转角度和设备中相机传感器的朝向来计算图片旋转角度
      *
      * @param c
      * @param deviceOrientation
