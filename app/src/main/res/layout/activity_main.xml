@@ -1,36 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <FrameLayout
-        android:id="@+id/container"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="30dp">
+    <Button android:id="@+id/btn_text_recognition"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </FrameLayout>
-    <LinearLayout
+        android:layout_height="wrap_content"
+        android:text="文本识别"/>
+    <Button android:id="@+id/btn_qrcode_scan"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-            <TextView
-                android:id="@+id/tv_content"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="6dp"
-                android:textColor="@android:color/holo_red_dark"/>
-        </ScrollView>
-        <Button
-            android:id="@+id/btn_take_picture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="开始识别"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="16dp"/>
-    </LinearLayout>
-
-
-</FrameLayout>
+        android:layout_height="wrap_content"
+        android:text="二维码/条形码识别"
+        android:layout_marginTop="10dp"/>
+</LinearLayout>
