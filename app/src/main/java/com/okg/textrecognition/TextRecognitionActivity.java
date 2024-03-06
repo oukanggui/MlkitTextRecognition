@@ -235,7 +235,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 // 文本转换为小写
                 lineText = lineText.toLowerCase();
                 Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
-                if (lineText.contains(KEY_IMEI)) {
+                if (lineText.startsWith(KEY_IMEI)) {
                     Log.d(TAG, "=======检测到有imei关键字=======");
                     // step1 该行文本包含imei关键字，进一步探测
                     if (lineText.contains(STR_SPLIT)) {
@@ -294,7 +294,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 // 文本转换为小写
                 lineText = lineText.toLowerCase();
                 Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
-                if (lineText.contains(KEY_IMEI)) {
+                if (lineText.startsWith(KEY_IMEI)) {
                     Log.d(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
                     String[] textArrays = lineText.split(STR_SPLIT);
                     if (textArrays != null && textArrays.length > 1) {
@@ -304,7 +304,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                             imei1 = textArrays[1];
                         }
                     }
-                } else if (lineText.contains(KEY_SN)) {
+                } else if (lineText.startsWith(KEY_SN)) {
                     Log.d(TAG, "检测到有sn关键字");
                     String[] textArrays = lineText.split(STR_SPLIT);
                     if (textArrays != null && textArrays.length > 1) {
@@ -340,7 +340,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 continue;
             }
             firstLineText = firstLineText.toLowerCase();
-            if (firstLineText.contains(KEY_SN) || firstLineText.contains(KEY_SN_CHINESE)) {
+            if (firstLineText.contains(KEY_SN_CHINESE)) {
                 Log.d(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getNextBlockLineText(resultText, i);
