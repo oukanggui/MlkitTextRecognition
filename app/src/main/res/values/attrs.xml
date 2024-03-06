@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ViewFinderView">
+        <attr name="rectLeft" format="dimension" /><!--取景框左边缘距离屏幕左边的距离-->
+        <attr name="rectTop" format="dimension" /><!--取景框上边缘距离屏幕上边的距离-->
+        <attr name="rectRight" format="dimension" /><!--取景框右边缘距离屏幕右边的距离-->
+        <attr name="rectBottom" format="dimension" /><!--取景框下边缘距离屏幕下边的距离-->
+        <attr name="rectCornerRadius" format="dimension" /><!--取景框圆角半径-->
+        <attr name="rectOutColor" format="color" /><!--取景框外部颜色，通常为半透明-->
+    </declare-styleable>
+</resources>
