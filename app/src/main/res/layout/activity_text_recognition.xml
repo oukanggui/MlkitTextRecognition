@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:frameCornerRadius="10dp"
-        app:frameHeight="100dp"
+        app:frameHeight="150dp"
         app:frameMarginLeft="20dp"
         app:frameMarginRight="20dp"
         app:frameOutColor="#50000000"/>
