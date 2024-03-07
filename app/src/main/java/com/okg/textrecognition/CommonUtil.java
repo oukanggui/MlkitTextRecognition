@@ -3,8 +3,15 @@ package com.okg.textrecognition;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 /**
  * @author oukanggui
@@ -94,6 +101,74 @@ public class CommonUtil {
     public static void log(String tag, String msg) {
         if (openLog) {
             Log.d(tag, msg);
+        }
+    }
+
+    /**
+     * 旋转图片
+     *
+     * @param sourceBitmap
+     * @param rotationDegrees
+     * @return
+     */
+    public static Bitmap rotateBitmap(Bitmap sourceBitmap, int rotationDegrees) {
+        if (sourceBitmap == null) {
+            return null;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setRotate(rotationDegrees);
+        return Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight(), matrix, true);
+    }
+
+    /**
+     * 裁剪图片
+     *
+     * @param sourceBitmap
+     * @param cropRect
+     * @return
+     */
+    public static Bitmap cropBitmap(Bitmap sourceBitmap, Rect cropRect) {
+        if (sourceBitmap == null) {
+            return null;
+        }
+        if (cropRect == null) {
+            return sourceBitmap;
+        }
+        return Bitmap.createBitmap(sourceBitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height());
+    }
+
+    /**
+     * 设置全屏显示，需要在setContentView前调用
+     *
+     * @param activity
+     */
+    public static void setFullScreen(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    /**
+     * 隐藏底部导航栏
+     *
+     * @param activity
+     */
+    public static void hideNavigationBar(Activity activity) {
+        if (activity == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+            View v = activity.getWindow().getDecorView();
+            v.setSystemUiVisibility(View.GONE);
+        } else if (Build.VERSION.SDK_INT >= 19) {
+            //for new api versions.
+            View decorView = activity.getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            decorView.setSystemUiVisibility(uiOptions);
         }
     }
 }
