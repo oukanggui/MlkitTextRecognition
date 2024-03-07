@@ -73,7 +73,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_text_recognition);
         // 隐藏导航键
-        //hideNavKey(this);
+        hideNavKey(this);
 
         initView();
         requestPermission();

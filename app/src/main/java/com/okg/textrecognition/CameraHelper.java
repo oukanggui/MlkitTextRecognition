@@ -232,15 +232,15 @@ public class CameraHelper {
      */
     private void initImageReader() {
         Log.d(TAG, "初始化图片ImageReader的宽=" + mCurrentSelectSize.getWidth() + "高=" + mCurrentSelectSize.getHeight());
-//        mImageReader = ImageReader.newInstance(mCurrentSelectSize.getWidth()
-//                , mCurrentSelectSize.getHeight()
-//                , ImageFormat.JPEG
-//                , 2);
-        Log.d(TAG, "initImageReader, " + mPreviewSize.toString());
-        mImageReader = ImageReader.newInstance(mPreviewSize.getWidth()
-                , mPreviewSize.getHeight()
+        mImageReader = ImageReader.newInstance(mCurrentSelectSize.getWidth()
+                , mCurrentSelectSize.getHeight()
                 , ImageFormat.JPEG
                 , 2);
+//        Log.d(TAG, "initImageReader, " + mPreviewSize.toString());
+//        mImageReader = ImageReader.newInstance(mPreviewSize.getWidth()
+//                , mPreviewSize.getHeight()
+//                , ImageFormat.JPEG
+//                , 2);
 
         mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
@@ -270,7 +270,6 @@ public class CameraHelper {
                 //当SurfaceTexture可用的时候，设置相机参数并打开相机
                 Log.d(TAG, "onSurfaceTextureAvailable, w= " + width + ",h=" + height);
                 openCamera();
-                mPreviewSize = new Size(width, height);
                 initImageReader();
             }
 
@@ -301,8 +300,8 @@ public class CameraHelper {
                 try {
                     SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
                     // TODO 是指预览图大小，设置不好会导致预览出现拉伸的情况
-                    Log.d(TAG, "onOpened:" + mPreviewSize.toString());
-                    surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    Log.d(TAG, "onOpened:" + mCurrentSelectSize.toString());
+                    surfaceTexture.setDefaultBufferSize(mCurrentSelectSize.getWidth(), mCurrentSelectSize.getHeight());
                     mSurface = new Surface(surfaceTexture);
                     // 创建预览请求
                     mCaptureRequest = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
