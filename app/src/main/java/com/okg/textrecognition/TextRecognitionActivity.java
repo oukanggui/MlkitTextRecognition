@@ -380,6 +380,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 break;
             }
         }
+        if (sn != null) {
+            sn.toUpperCase();
+        }
         return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
 
@@ -438,6 +441,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 break;
             }
         }
+        if (sn != null) {
+            sn.toUpperCase();
+        }
         return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
 
@@ -472,6 +478,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 // 已全部获取，提前退出循环
                 break;
             }
+        }
+        if (sn != null) {
+            sn.toUpperCase();
         }
         return "imei1 = " + imei1 + "\n" + "imei2 = " + imei2 + "\n" + "sn = " + sn;
     }
