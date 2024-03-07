@@ -20,19 +20,18 @@ import androidx.annotation.Nullable;
  * @date 2024-03-06
  * 描述：取景框自定义View
  */
-class ViewFinderView extends View {
-    private static final int defaultRectLeft = 50;
-    private static final int defaultRectTop = 300;
-    private static final int defaultRectRight = 50;
-    private static final int defaultRectBottom = 300;
-    private static final int defaultRectCornerRadius = 20;
-    private static final int defaultRectOutColor = Color.parseColor("#cccccc");
+public class ViewFinderView extends View {
+    private static final int defaultFrameHeight = 300;
+    private static final int defaultFrameMarginLeft = 60;
+    private static final int defaultFrameMarginRight = 60;
+    private static final int defaultFrameCornerRadius = 30;
+    private static final int defaultFrameOutColor = Color.parseColor("#50000000");
 
     private Context mContext;
     private Paint mPaint;
-    private float mRectLeft, mRectRight, mRectTop, mRectBottom;
-    private float mRectCornerRadius;
-    private int mRectOutColor;
+    private float mFrameMarginLeft, mFrameMarginRight, mFrameHeight;
+    private float mFrameCornerRadius;
+    private int mFrameOutColor;
     private int screenWidth, screenHeight;
 
 
@@ -52,27 +51,26 @@ class ViewFinderView extends View {
         screenHeight = CommonUtil.getRealScreenHeight(mContext);
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ViewFinderView);
         if (ta != null) {
-            mRectLeft = ta.getDimension(R.styleable.ViewFinderView_rectLeft, defaultRectLeft);
-            mRectTop = ta.getDimension(R.styleable.ViewFinderView_rectTop, defaultRectTop);
-            mRectRight = ta.getDimension(R.styleable.ViewFinderView_rectRight, defaultRectRight);
-            mRectBottom = ta.getDimension(R.styleable.ViewFinderView_rectBottom, defaultRectBottom);
-            mRectCornerRadius = ta.getDimension(R.styleable.ViewFinderView_rectCornerRadius, defaultRectCornerRadius);
-            mRectOutColor = ta.getColor(R.styleable.ViewFinderView_rectOutColor, defaultRectOutColor);
+            mFrameHeight = ta.getDimension(R.styleable.ViewFinderView_frameHeight, defaultFrameHeight);
+            mFrameMarginLeft = ta.getDimension(R.styleable.ViewFinderView_frameMarginLeft, defaultFrameMarginLeft);
+            mFrameMarginRight = ta.getDimension(R.styleable.ViewFinderView_frameMarginRight, defaultFrameMarginRight);
+            mFrameCornerRadius = ta.getDimension(R.styleable.ViewFinderView_frameCornerRadius, defaultFrameCornerRadius);
+            mFrameOutColor = ta.getColor(R.styleable.ViewFinderView_frameOutColor, defaultFrameOutColor);
         }
     }
 
     protected void onDraw(Canvas canvas) {
         //抗锯齿
         mPaint.setAntiAlias(true);
-        mPaint.setColor(mRectOutColor);
-        // 取景框和全屏
-        RectF rect = new RectF(mRectLeft, mRectTop, screenWidth - mRectRight, screenHeight - mRectBottom);
+        mPaint.setColor(mFrameOutColor);
+        // 取景框
+        RectF rect = new RectF(mFrameMarginLeft, screenHeight / 2 - mFrameHeight / 2, screenWidth - mFrameMarginRight, screenHeight / 2 + mFrameHeight / 2);
         Path path = new Path();
-        path.addRoundRect(rect, mRectCornerRadius, mRectCornerRadius, Path.Direction.CW);
-        // 全屏
+        path.addRoundRect(rect, mFrameCornerRadius, mFrameCornerRadius, Path.Direction.CW);
+        // 取景框Region
         Region region = new Region();
         region.setPath(path, new Region(0, 0, screenWidth, screenHeight));
-
+        // 全屏Region
         Region region1 = new Region();
         Path path1 = new Path();
         path1.addRect(0, 0, screenWidth, screenHeight, Path.Direction.CW);
@@ -85,5 +83,21 @@ class ViewFinderView extends View {
         while (iterator.next(rec)) {
             canvas.drawRect(rec, mPaint);
         }
+    }
+
+    public float getFrameLeft() {
+        return mFrameMarginLeft;
+    }
+
+    public float getFrameRight() {
+        return screenWidth - mFrameMarginRight;
+    }
+
+    public float getFrameTop() {
+        return screenHeight / 2 - mFrameHeight / 2;
+    }
+
+    public float getFrameBottom() {
+        return screenHeight / 2 + mFrameHeight / 2;
     }
 }
