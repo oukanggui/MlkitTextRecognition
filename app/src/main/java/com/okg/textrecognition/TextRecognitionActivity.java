@@ -49,6 +49,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     private static final String KEY_IMEI1 = "imei1";
     private static final String KEY_IMEI2 = "imei2";
     private static final String KEY_SN = "sn";
+    private static final String KEY_SN1 = "s/n";
     private static final String KEY_SN_CHINESE = "序列号";
 
     private static final int TYPE_LAYOUT_CMD = 1;
@@ -355,11 +356,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
                 if (lineText.startsWith(KEY_IMEI)) {
                     Log.d(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
-                    String[] textArrays = lineText.split(STR_SPLIT);
-                    if (textArrays == null || textArrays.length < 2) {
-                        // 进一步查看空格换行符的情况
-                        textArrays = lineText.split(STR_SPLIT_BLANK);
-                    }
+                    String[] textArrays = getCmdSplitArrays(lineText);
                     if (textArrays != null && textArrays.length > 1) {
                         if (lineText.contains(KEY_IMEI2)) {
                             imei2 = textArrays[1];
@@ -367,9 +364,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
                             imei1 = textArrays[1];
                         }
                     }
-                } else if (lineText.startsWith(KEY_SN)) {
+                } else if (lineText.startsWith(KEY_SN) || lineText.startsWith(KEY_SN1)) {
                     Log.d(TAG, "检测到有sn关键字");
-                    String[] textArrays = lineText.split(STR_SPLIT);
+                    String[] textArrays = getCmdSplitArrays(lineText);
                     if (textArrays != null && textArrays.length > 1) {
                         sn = textArrays[1];
                     }
@@ -406,7 +403,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 continue;
             }
             firstLineText = firstLineText.toLowerCase();
-            if (firstLineText.startsWith(KEY_SN) || firstLineText.contains(KEY_SN_CHINESE)) {
+            if (firstLineText.startsWith(KEY_SN) || firstLineText.startsWith(KEY_SN1) || firstLineText.contains(KEY_SN_CHINESE)) {
                 Log.d(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getNextBlockLineText(resultText, i);
@@ -462,7 +459,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 continue;
             }
             blockText = blockText.toLowerCase();
-            if (blockText.startsWith(KEY_SN) || blockText.contains(KEY_SN_CHINESE)) {
+            if (blockText.startsWith(KEY_SN) || blockText.startsWith(KEY_SN) || blockText.contains(KEY_SN_CHINESE)) {
                 Log.d(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getHorizontalBlockText(resultText, textBlock.getBoundingBox());
@@ -539,6 +536,18 @@ public class TextRecognitionActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    private String[] getCmdSplitArrays(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return null;
+        }
+        String[] textArrays = text.split(STR_SPLIT);
+        if (textArrays == null || textArrays.length < 2) {
+            // 进一步查看空格换行符的情况
+            textArrays = text.split(STR_SPLIT_BLANK);
+        }
+        return textArrays;
     }
 
     private boolean isImei(String text) {
