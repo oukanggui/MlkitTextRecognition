@@ -16,7 +16,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,7 +114,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                     mCameraHelper.takePicture(new CameraHelper.OnTakePictureListener() {
                         @Override
                         public void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees) {
-                            Log.d(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
+                            CommonUtil.log(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
                             analyzeImage(bitmap, pictureRotationDegrees);
                         }
                     });
@@ -171,7 +170,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     @SuppressLint("UnsafeOptInUsageError")
     private void analyzeImage(Bitmap bitmap, int rotationDegrees) {
         if (bitmap == null) {
-            Log.e(TAG, "analyzeImage , bitmap is null !!!!!!!");
+            CommonUtil.log(TAG, "analyzeImage , bitmap is null !!!!!!!");
             return;
         }
         Bitmap cropBitmap = cropBitmap(rotateBitmap(bitmap, rotationDegrees));
@@ -201,7 +200,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                     }
                     stringBuffer.append("\n");
                 }
-                Log.d(TAG, "original text = " + stringBuffer.toString());
+                CommonUtil.log(TAG, "original text = " + stringBuffer.toString());
 //                tvContent.setText(stringBuffer.toString());
                 parseText(result);
             }
@@ -234,17 +233,15 @@ public class TextRecognitionActivity extends AppCompatActivity {
         if (sourceBitmap == null) {
             return null;
         }
-        Log.d(TAG, "cropBitmap: width--" + sourceBitmap.getWidth());
-        Log.d(TAG, "cropBitmap: height-" + sourceBitmap.getHeight());
+        CommonUtil.log(TAG, "cropBitmap: width--" + sourceBitmap.getWidth());
+        CommonUtil.log(TAG, "cropBitmap: height-" + sourceBitmap.getHeight());
         Rect rect = new Rect((int) frameView.getFrameLeft(), (int) frameView.getFrameTop(), (int) frameView.getFrameRight(), (int) frameView.getFrameBottom());
-        Log.d(TAG, "cropBitmap: " + rect.toString());
-        Log.d(TAG, "cropBitmap: rect width--" + rect.width());
-        Log.d(TAG, "cropBitmap: rect height-" + rect.height());
+        CommonUtil.log(TAG, "cropBitmap: rect= " + rect.toString());
         return Bitmap.createBitmap(sourceBitmap, rect.left, rect.top, rect.width(), rect.height());
     }
 
     private void parseText(Text result) {
-        Log.d(TAG, "parseText: " + result.getText());
+        CommonUtil.log(TAG, "parseText: " + result.getText());
         int blockCount = result == null ? 0 : result.getTextBlocks().size();
         if (blockCount == 0) {
             Toast.makeText(TextRecognitionActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
@@ -284,7 +281,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
         for (int i = 0; i < blockCount; i++) {
             Text.TextBlock textBlock = result.getTextBlocks().get(i);
             Rect rect = textBlock.getBoundingBox();
-            Log.d(TAG, "blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
+            CommonUtil.log(TAG, "blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
             int lineCount = textBlock.getLines().size();
             if (lineCount == 0) {
                 continue;
@@ -294,22 +291,22 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 String lineText = textLine.getText();
                 // 文本转换为小写
                 lineText = lineText.toLowerCase();
-                Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+                CommonUtil.log(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
                 if (lineText.startsWith(KEY_IMEI)) {
-                    Log.d(TAG, "=======检测到有imei关键字=======");
+                    CommonUtil.log(TAG, "=======检测到有imei关键字=======");
                     // step1 该行文本包含imei关键字，进一步探测，目前发现有以:或空格风格的情况
                     if (detectIsCmdLayout(lineText)) {
                         // 包含“:”，证明是通过*#06#命令查看的方式
-                        Log.d(TAG, "检测到有imei关键字且包含:或空格，判定为通过命令行输入方式");
+                        CommonUtil.log(TAG, "检测到有imei关键字且包含:或空格，判定为通过命令行输入方式");
                         return TYPE_LAYOUT_CMD;
                     } else {
                         // step2 检测是否为横向的
                         boolean isHorizontal = detectIsHorizontal(rect, result);
                         if (isHorizontal) {
-                            Log.d(TAG, "判断为横向排版");
+                            CommonUtil.log(TAG, "判断为横向排版");
                             return TYPE_LAYOUT_HORIZONTAL;
                         } else {
-                            Log.d(TAG, "判断为垂直排版");
+                            CommonUtil.log(TAG, "判断为垂直排版");
                             return TYPE_LAYOUT_VERTICAL;
                         }
                     }
@@ -336,7 +333,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     }
 
     private String parseCMDDeviceInfo(Text resultText) {
-        Log.d(TAG, "=====parseCMDDeviceInfo=====");
+        CommonUtil.log(TAG, "=====parseCMDDeviceInfo=====");
         String imei1 = "";
         String imei2 = "";
         String sn = "";
@@ -353,9 +350,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 String lineText = textLine.getText();
                 // 文本转换为小写
                 lineText = lineText.toLowerCase();
-                Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
+                CommonUtil.log(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
                 if (lineText.startsWith(KEY_IMEI)) {
-                    Log.d(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
+                    CommonUtil.log(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
                     String[] textArrays = getCmdSplitArrays(lineText);
                     if (textArrays != null && textArrays.length > 1) {
                         if (lineText.contains(KEY_IMEI2)) {
@@ -365,7 +362,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                         }
                     }
                 } else if (lineText.startsWith(KEY_SN) || lineText.startsWith(KEY_SN1)) {
-                    Log.d(TAG, "检测到有sn关键字");
+                    CommonUtil.log(TAG, "检测到有sn关键字");
                     String[] textArrays = getCmdSplitArrays(lineText);
                     if (textArrays != null && textArrays.length > 1) {
                         sn = textArrays[1];
@@ -384,7 +381,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     }
 
     private String parseVerticalDeviceInfo(Text resultText) {
-        Log.d(TAG, "=====parseVerticalDeviceInfo=====");
+        CommonUtil.log(TAG, "=====parseVerticalDeviceInfo=====");
         String imei1 = "";
         String imei2 = "";
         String sn = "";
@@ -392,23 +389,23 @@ public class TextRecognitionActivity extends AppCompatActivity {
         // 先遍历查找imei，并确定布局方向
         for (int i = 0; i < blockCount; i++) {
             Text.TextBlock textBlock = resultText.getTextBlocks().get(i);
-            Log.d(TAG, "blockText = " + textBlock.getText());
+            CommonUtil.log(TAG, "blockText = " + textBlock.getText());
             int lineCount = textBlock.getLines().size();
             if (lineCount == 0) {
                 continue;
             }
             String firstLineText = textBlock.getLines().get(0).getText();
-            Log.d(TAG, "LineCount=" + lineCount + " ,firstLineText:" + firstLineText);
+            CommonUtil.log(TAG, "LineCount=" + lineCount + " ,firstLineText:" + firstLineText);
             if (TextUtils.isEmpty(firstLineText)) {
                 continue;
             }
             firstLineText = firstLineText.toLowerCase();
             if (firstLineText.startsWith(KEY_SN) || firstLineText.startsWith(KEY_SN1) || firstLineText.contains(KEY_SN_CHINESE)) {
-                Log.d(TAG, "检测到有sn/序列号信息");
+                CommonUtil.log(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getNextBlockLineText(resultText, i);
             } else if (firstLineText.contains(KEY_IMEI)) {
-                Log.d(TAG, "检测到有imei信息");
+                CommonUtil.log(TAG, "检测到有imei信息");
                 String nextLineOrBlockText = "";
                 // 先判断本block中是否有imei信息
                 if (lineCount > 1) {
@@ -424,7 +421,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(nextLineOrBlockText)) {
                     nextLineOrBlockText = getNextBlockLineText(resultText, i);
                 }
-                Log.d(TAG, "nextLineOrBlockText = " + nextLineOrBlockText);
+                CommonUtil.log(TAG, "nextLineOrBlockText = " + nextLineOrBlockText);
                 if (!TextUtils.isEmpty(nextLineOrBlockText)) {
                     if (TextUtils.isEmpty(imei1)) {
                         imei1 = nextLineOrBlockText;
@@ -445,7 +442,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     }
 
     private String parseHorizontalDeviceInfo(Text resultText) {
-        Log.d(TAG, "=====parseHorizontalDeviceInfo=====");
+        CommonUtil.log(TAG, "=====parseHorizontalDeviceInfo=====");
         String imei1 = "";
         String imei2 = "";
         String sn = "";
@@ -454,13 +451,13 @@ public class TextRecognitionActivity extends AppCompatActivity {
         for (int i = 0; i < blockCount; i++) {
             Text.TextBlock textBlock = resultText.getTextBlocks().get(i);
             String blockText = textBlock.getText();
-            Log.d(TAG, "blockText = " + blockText);
+            CommonUtil.log(TAG, "blockText = " + blockText);
             if (TextUtils.isEmpty(blockText)) {
                 continue;
             }
             blockText = blockText.toLowerCase();
             if (blockText.startsWith(KEY_SN) || blockText.startsWith(KEY_SN) || blockText.contains(KEY_SN_CHINESE)) {
-                Log.d(TAG, "检测到有sn/序列号信息");
+                CommonUtil.log(TAG, "检测到有sn/序列号信息");
                 // 下一行为序列号信息
                 sn = getHorizontalBlockText(resultText, textBlock.getBoundingBox());
             } else if (blockText.contains(KEY_IMEI)) {
@@ -502,7 +499,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 return resultText.getTextBlocks().get(i).getText();
             }
         }
-        Log.e(TAG, "判断为横向，但找不到横向对应的block，请检查程序逻辑");
+        CommonUtil.log(TAG, "判断为横向，但找不到横向对应的block，请检查程序逻辑");
         return "";
     }
 

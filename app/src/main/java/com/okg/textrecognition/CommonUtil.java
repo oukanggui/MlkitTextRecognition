@@ -82,8 +82,18 @@ public class CommonUtil {
      * @param msg
      */
     public static void log(String msg) {
+        log(TAG, msg);
+    }
+
+    /**
+     * 简单的日志打印，用于调试
+     *
+     * @param tag
+     * @param msg
+     */
+    public static void log(String tag, String msg) {
         if (openLog) {
-            Log.d(TAG, msg);
+            Log.d(tag, msg);
         }
     }
 }

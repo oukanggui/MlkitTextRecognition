@@ -22,7 +22,6 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.Size;
 import android.view.OrientationEventListener;
 import android.view.Surface;
@@ -87,7 +86,7 @@ public class CameraHelper {
          *
          * @param bitmap                 图片保存的图片文件
          * @param pictureRotationDegrees 图片旋转角度
-         * @param deviceRotationDegrees 设备旋转角度
+         * @param deviceRotationDegrees  设备旋转角度
          */
         void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees);
     }
@@ -203,7 +202,7 @@ public class CameraHelper {
             DisplayMetrics displayMetrics = mActivity.getResources().getDisplayMetrics();
             int deviceWidth = displayMetrics.widthPixels;
             int deviceHeight = displayMetrics.heightPixels;
-            Log.d(TAG, "当前屏幕密度宽度=" + deviceWidth + "，高度=" + deviceHeight);
+            CommonUtil.log(TAG, "当前屏幕密度宽度=" + deviceWidth + "，高度=" + deviceHeight);
             for (int j = 1; j < 81; j++) {
                 for (int i = 0; i < sizes.length; i++) {
                     Size itemSize = sizes[i];
@@ -224,19 +223,19 @@ public class CameraHelper {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Log.d(TAG, "当前预览宽度=" + mCurrentSelectSize.getWidth() + "，高度=" + mCurrentSelectSize.getHeight());
+        CommonUtil.log(TAG, "当前预览宽度=" + mCurrentSelectSize.getWidth() + "，高度=" + mCurrentSelectSize.getHeight());
     }
 
     /**
      * 初始化图片Reader，用于保存图片,在后台线程进行图片处理
      */
     private void initImageReader() {
-        Log.d(TAG, "初始化图片ImageReader的宽=" + mCurrentSelectSize.getWidth() + "高=" + mCurrentSelectSize.getHeight());
+        CommonUtil.log(TAG, "初始化图片ImageReader的宽=" + mCurrentSelectSize.getWidth() + "高=" + mCurrentSelectSize.getHeight());
         mImageReader = ImageReader.newInstance(mCurrentSelectSize.getWidth()
                 , mCurrentSelectSize.getHeight()
                 , ImageFormat.JPEG
                 , 2);
-//        Log.d(TAG, "initImageReader, " + mPreviewSize.toString());
+//        CommonUtil.log(TAG, "initImageReader, " + mPreviewSize.toString());
 //        mImageReader = ImageReader.newInstance(mPreviewSize.getWidth()
 //                , mPreviewSize.getHeight()
 //                , ImageFormat.JPEG
@@ -245,7 +244,7 @@ public class CameraHelper {
         mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                Log.d(TAG, "onImageAvailable,保存图片，thread=" + Thread.currentThread().getName());
+                CommonUtil.log(TAG, "onImageAvailable,保存图片，thread=" + Thread.currentThread().getName());
                 Image image = reader.acquireLatestImage();
                 ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[byteBuffer.remaining()];
@@ -268,7 +267,7 @@ public class CameraHelper {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
                 //当SurfaceTexture可用的时候，设置相机参数并打开相机
-                Log.d(TAG, "onSurfaceTextureAvailable, w= " + width + ",h=" + height);
+                CommonUtil.log(TAG, "onSurfaceTextureAvailable, w= " + width + ",h=" + height);
                 openCamera();
                 initImageReader();
             }
@@ -294,13 +293,13 @@ public class CameraHelper {
         mCameraDeviceStateCallback = new CameraDevice.StateCallback() {
             @Override
             public void onOpened(@NonNull CameraDevice camera) {
-                Log.d(TAG, "相机开启");
+                CommonUtil.log(TAG, "相机开启");
                 //相机开启
                 mCameraDevice = camera;
                 try {
                     SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
                     // TODO 是指预览图大小，设置不好会导致预览出现拉伸的情况
-                    Log.d(TAG, "onOpened:" + mCurrentSelectSize.toString());
+                    CommonUtil.log(TAG, "onOpened:" + mCurrentSelectSize.toString());
                     surfaceTexture.setDefaultBufferSize(mCurrentSelectSize.getWidth(), mCurrentSelectSize.getHeight());
                     mSurface = new Surface(surfaceTexture);
                     // 创建预览请求
@@ -329,7 +328,7 @@ public class CameraHelper {
                     mActivity.finish();
                 }
                 //Toast.makeText(mActivity, "相机打开失败", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "CameraDevice.StateCallback onError : 相机异常 error code=" + error);
+                CommonUtil.log(TAG, "CameraDevice.StateCallback onError : 相机异常 error code=" + error);
                 releaseCamera();
             }
         };
@@ -347,7 +346,7 @@ public class CameraHelper {
             public void onConfigureFailed(@NonNull CameraCaptureSession session) {
                 mActivity.finish();
                 Toast.makeText(mActivity, "相机打开失败", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "CameraCaptureSession.StateCallback onConfigureFailed : CameraCaptureSession会话通道创建失败");
+                CommonUtil.log(TAG, "CameraCaptureSession.StateCallback onConfigureFailed : CameraCaptureSession会话通道创建失败");
             }
         };
     }
@@ -377,7 +376,7 @@ public class CameraHelper {
                 super.onCaptureFailed(session, request, failure);
                 //获取失败
                 //Toast.makeText(mActivity, "拍照失败", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "失败报告Reason=" + failure.getReason());
+                CommonUtil.log(TAG, "onCaptureFailed,Reason=" + failure.getReason());
             }
         };
     }
@@ -440,8 +439,8 @@ public class CameraHelper {
             mDeviceRotationDegrees = mActivity.getWindowManager().getDefaultDisplay().getRotation();
             // 计算图片选装角度
             mPictureRotationDegrees = getJpegOrientation(mCameraManager.getCameraCharacteristics(mCurrentCameraId), mDeviceRotationDegrees);
-            Log.d(TAG, "takePicture 设备旋转角度=" + mDeviceRotationDegrees);
-            Log.d(TAG, "takePicture 图片旋转角度=" + mPictureRotationDegrees);
+            CommonUtil.log(TAG, "takePicture 设备旋转角度=" + mDeviceRotationDegrees);
+            CommonUtil.log(TAG, "takePicture 图片旋转角度=" + mPictureRotationDegrees);
             // takePictureRequest.set(CaptureRequest.JPEG_ORIENTATION, mPictureRotationDegrees);
             Surface surface = mImageReader.getSurface();
             takePictureRequest.addTarget(surface);
@@ -488,7 +487,7 @@ public class CameraHelper {
      * 释放相机资源
      */
     public void releaseCamera() {
-        Log.d(TAG, "releaseCamera========");
+        CommonUtil.log(TAG, "releaseCamera========");
         if (mImageReader != null) {
             mImageReader.close();
             mImageReader = null;
