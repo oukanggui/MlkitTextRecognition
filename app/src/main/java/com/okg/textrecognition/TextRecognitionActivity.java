@@ -44,6 +44,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
     private static final String TAG = "Mlkit-MainActivity";
     private static int CAMERA_PERMISSION_CODE = 100;
     private static final String STR_SPLIT = ":";
+    private static final String STR_SPLIT_BLANK = " ";
     private static final String KEY_IMEI = "imei";
     private static final String KEY_IMEI1 = "imei1";
     private static final String KEY_IMEI2 = "imei2";
@@ -295,10 +296,10 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 Log.d(TAG, "lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
                 if (lineText.startsWith(KEY_IMEI)) {
                     Log.d(TAG, "=======检测到有imei关键字=======");
-                    // step1 该行文本包含imei关键字，进一步探测
-                    if (lineText.contains(STR_SPLIT)) {
+                    // step1 该行文本包含imei关键字，进一步探测，目前发现有以:或空格风格的情况
+                    if (detectIsCmdLayout(lineText)) {
                         // 包含“:”，证明是通过*#06#命令查看的方式
-                        Log.d(TAG, "检测到有imei关键字且包含:，判定为通过命令行输入方式");
+                        Log.d(TAG, "检测到有imei关键字且包含:或空格，判定为通过命令行输入方式");
                         return TYPE_LAYOUT_CMD;
                     } else {
                         // step2 检测是否为横向的
@@ -355,6 +356,10 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 if (lineText.startsWith(KEY_IMEI)) {
                     Log.d(TAG, "检测到有imei关键字, 需要进一步判断是否为imei1和imei2");
                     String[] textArrays = lineText.split(STR_SPLIT);
+                    if (textArrays == null || textArrays.length < 2) {
+                        // 进一步查看空格换行符的情况
+                        textArrays = lineText.split(STR_SPLIT_BLANK);
+                    }
                     if (textArrays != null && textArrays.length > 1) {
                         if (lineText.contains(KEY_IMEI2)) {
                             imei2 = textArrays[1];
@@ -507,6 +512,22 @@ public class TextRecognitionActivity extends AppCompatActivity {
         }
         if ((top1 > top2 && top1 < bottom2) || (bottom1 > top2 && bottom1 < bottom2) || (top2 > top1 && top2 < bottom1) || (bottom2 > top1 && bottom2 < bottom1)) {
             return true;
+        }
+        return false;
+    }
+
+    private boolean detectIsCmdLayout(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return false;
+        }
+        if (text.contains(STR_SPLIT)) {
+            return true;
+        }
+        if (text.contains(STR_SPLIT_BLANK)) {
+            String[] textArrays = text.split(STR_SPLIT_BLANK);
+            if (textArrays != null && textArrays.length > 1 && isImei(textArrays[1])) {
+                return true;
+            }
         }
         return false;
     }
