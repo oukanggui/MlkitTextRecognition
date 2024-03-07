@@ -40,7 +40,7 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 import java.util.List;
 
 public class TextRecognitionActivity extends AppCompatActivity {
-    private static final String TAG = "Mlkit-MainActivity";
+    private static final String TAG = "Mlkit-TextRecognitionActivity";
     private static int CAMERA_PERMISSION_CODE = 100;
     private static final String STR_SPLIT = ":";
     private static final String STR_SPLIT_BLANK = " ";
