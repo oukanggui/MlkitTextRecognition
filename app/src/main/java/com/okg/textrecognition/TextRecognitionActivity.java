@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +58,9 @@ public class TextRecognitionActivity extends AppCompatActivity {
     private FrameLayout textureViewContainer;
     private TextView tvContent;
 
+    private ViewFinderView frameView;
+    private ImageView ivCrop;
+
     private CameraHelper mCameraHelper;
 
     @Override
@@ -68,7 +73,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_text_recognition);
         // 隐藏导航键
-        hideNavKey(this);
+        //hideNavKey(this);
 
         initView();
         requestPermission();
@@ -97,6 +102,8 @@ public class TextRecognitionActivity extends AppCompatActivity {
     private void initView() {
         btnTakePicture = findViewById(R.id.btn_take_picture);
         tvContent = findViewById(R.id.tv_content);
+        frameView = findViewById(R.id.view_frame);
+        ivCrop = findViewById(R.id.iv_crop);
         //textureView = findViewById(R.id.texture_view);
         textureViewContainer = findViewById(R.id.container);
         btnTakePicture.setOnClickListener(new View.OnClickListener() {
@@ -165,11 +172,13 @@ public class TextRecognitionActivity extends AppCompatActivity {
             Log.e(TAG, "analyzeImage , bitmap is null !!!!!!!");
             return;
         }
-        InputImage inputImage = InputImage.fromBitmap(bitmap, rotationDegrees);
+        Bitmap cropBitmap = cropBitmap(rotateBitmap(bitmap, rotationDegrees));
+        InputImage inputImage = InputImage.fromBitmap(cropBitmap, 0);
         TextRecognizer recognizer = TextRecognition.getClient(new ChineseTextRecognizerOptions.Builder().build());
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text result) {
+                ivCrop.setImageBitmap(cropBitmap);
                 int blockCount = result.getTextBlocks().size();
                 if (blockCount == 0) {
                     Toast.makeText(TextRecognitionActivity.this, "No Text Found in image!", Toast.LENGTH_LONG).show();
@@ -207,6 +216,29 @@ public class TextRecognitionActivity extends AppCompatActivity {
                 bitmap.recycle();
             }
         });
+    }
+
+    private Bitmap rotateBitmap(Bitmap sourceBitmap, int rotationDegrees) {
+        if (sourceBitmap == null) {
+            return null;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setRotate(rotationDegrees);
+        return Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight(),
+                matrix, true);
+    }
+
+    private Bitmap cropBitmap(Bitmap sourceBitmap) {
+        if (sourceBitmap == null) {
+            return null;
+        }
+        Log.d(TAG, "cropBitmap: width--" + sourceBitmap.getWidth());
+        Log.d(TAG, "cropBitmap: height-" + sourceBitmap.getHeight());
+        Rect rect = new Rect((int) frameView.getFrameLeft(), (int) frameView.getFrameTop(), (int) frameView.getFrameRight(), (int) frameView.getFrameBottom());
+        Log.d(TAG, "cropBitmap: " + rect.toString());
+        Log.d(TAG, "cropBitmap: rect width--" + rect.width());
+        Log.d(TAG, "cropBitmap: rect height-" + rect.height());
+        return Bitmap.createBitmap(sourceBitmap, rect.left, rect.top, rect.width(), rect.height());
     }
 
     private void parseText(Text result) {
