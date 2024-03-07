@@ -24,7 +24,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".QRCodeScanActivity" />
-        <activity android:name=".TextRecognitionActivity" >
+        <activity android:name=".TextRecognitionActivity"
+            android:theme="@style/FullScreenTheme">
         </activity>
     </application>
 
