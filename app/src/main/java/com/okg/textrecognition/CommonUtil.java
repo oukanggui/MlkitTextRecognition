@@ -107,34 +107,44 @@ public class CommonUtil {
     /**
      * 旋转图片
      *
-     * @param sourceBitmap
+     * @param originBitmap
      * @param rotationDegrees
      * @return
      */
-    public static Bitmap rotateBitmap(Bitmap sourceBitmap, int rotationDegrees) {
-        if (sourceBitmap == null) {
+    public static Bitmap rotateBitmap(Bitmap originBitmap, int rotationDegrees) {
+        if (originBitmap == null) {
             return null;
         }
         Matrix matrix = new Matrix();
         matrix.setRotate(rotationDegrees);
-        return Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight(), matrix, true);
+        Bitmap newBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
+        if (newBitmap.equals(originBitmap)) {
+            return newBitmap;
+        }
+        originBitmap.recycle();
+        return newBitmap;
     }
 
     /**
      * 裁剪图片
      *
-     * @param sourceBitmap
+     * @param originBitmap
      * @param cropRect
      * @return
      */
-    public static Bitmap cropBitmap(Bitmap sourceBitmap, Rect cropRect) {
-        if (sourceBitmap == null) {
+    public static Bitmap cropBitmap(Bitmap originBitmap, Rect cropRect) {
+        if (originBitmap == null) {
             return null;
         }
         if (cropRect == null) {
-            return sourceBitmap;
+            return originBitmap;
         }
-        return Bitmap.createBitmap(sourceBitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height());
+        Bitmap newBitmap = Bitmap.createBitmap(originBitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height());
+        if (newBitmap.equals(originBitmap)) {
+            return newBitmap;
+        }
+        originBitmap.recycle();
+        return newBitmap;
     }
 
     /**
@@ -153,12 +163,12 @@ public class CommonUtil {
         Matrix matrix = new Matrix();
         matrix.preScale(ratio, ratio);
         Bitmap newBitmap = Bitmap.createBitmap(originBitmap, 0, 0, width, height, matrix, false);
+        log(TAG, "缩放前宽高：" + width + "-" + height);
+        log(TAG, "缩放后宽高：" + newBitmap.getWidth() + "-" + newBitmap.getHeight());
         if (newBitmap.equals(originBitmap)) {
             return newBitmap;
         }
         originBitmap.recycle();
-        log(TAG, "缩放前宽高：" + width + "-" + height);
-        log(TAG, "缩放后宽高：" + newBitmap.getWidth() + "-" + newBitmap.getHeight());
         return newBitmap;
     }
 
