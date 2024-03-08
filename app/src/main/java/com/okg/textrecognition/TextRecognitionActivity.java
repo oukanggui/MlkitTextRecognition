@@ -148,6 +148,10 @@ public class TextRecognitionActivity extends AppCompatActivity {
             public void onSuccess(Text result) {
                 ivCrop.setImageBitmap(resultBitmap);
                 int blockCount = result.getTextBlocks().size();
+                if (blockCount == 0 || TextUtils.isEmpty(result.getText())) {
+                    Toast.makeText(TextRecognitionActivity.this, "识别不出内容，请对准拍摄", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 StringBuffer stringBuffer = new StringBuffer();
                 for (int i = 0; i < blockCount; i++) {
                     Text.TextBlock textBlock = result.getTextBlocks().get(i);
