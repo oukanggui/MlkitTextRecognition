@@ -138,6 +138,31 @@ public class CommonUtil {
     }
 
     /**
+     * 按比例缩放图片
+     *
+     * @param originBitmap 原图
+     * @param ratio        比例
+     * @return 新的bitmap
+     */
+    public static Bitmap scaleBitmap(Bitmap originBitmap, float ratio) {
+        if (originBitmap == null) {
+            return null;
+        }
+        int width = originBitmap.getWidth();
+        int height = originBitmap.getHeight();
+        Matrix matrix = new Matrix();
+        matrix.preScale(ratio, ratio);
+        Bitmap newBitmap = Bitmap.createBitmap(originBitmap, 0, 0, width, height, matrix, false);
+        if (newBitmap.equals(originBitmap)) {
+            return newBitmap;
+        }
+        originBitmap.recycle();
+        log(TAG, "缩放前宽高：" + width + "-" + height);
+        log(TAG, "缩放后宽高：" + newBitmap.getWidth() + "-" + newBitmap.getHeight());
+        return newBitmap;
+    }
+
+    /**
      * 设置全屏显示，需要在setContentView前调用
      *
      * @param activity

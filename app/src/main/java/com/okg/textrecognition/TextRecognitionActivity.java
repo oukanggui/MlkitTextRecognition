@@ -190,4 +190,26 @@ public class TextRecognitionActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * 对bitmap进行旋转、缩放及裁剪处理
+     *
+     * @param sourceBitmap
+     * @param rotationDegrees
+     * @return
+     */
+    private Bitmap handleBitmap(Bitmap sourceBitmap, int rotationDegrees) {
+        if (sourceBitmap == null || sourceBitmap.getWidth() <= 0 || sourceBitmap.getWidth() <= 0) {
+            return sourceBitmap;
+        }
+        // step1 对bitmap进行旋转
+        Bitmap rotateBitmap = CommonUtil.rotateBitmap(sourceBitmap, rotationDegrees);
+        // step2 对bitmap按屏幕宽度进行等比例缩放
+        float scaleRatio = CommonUtil.getRealScreenWidth(this) / sourceBitmap.getWidth();
+        Bitmap scaleBitmap = CommonUtil.scaleBitmap(rotateBitmap, scaleRatio);
+        // step3 对bitmap进行裁剪，需要重新调整裁剪的矩形框
+        Rect cropRect = new Rect((int) frameView.getFrameLeft(), (int) frameView.getFrameTop(), (int) frameView.getFrameRight(), (int) frameView.getFrameBottom());
+        return CommonUtil.cropBitmap(scaleBitmap, cropRect);
+
+    }
 }
