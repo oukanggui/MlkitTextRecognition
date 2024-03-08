@@ -100,4 +100,12 @@ public class ViewFinderView extends View {
     public float getFrameBottom() {
         return screenHeight / 2 + mFrameHeight / 2;
     }
+
+    public float getFrameMarginRight() {
+        return mFrameMarginRight;
+    }
+
+    public float getFrameHeight() {
+        return mFrameHeight;
+    }
 }
