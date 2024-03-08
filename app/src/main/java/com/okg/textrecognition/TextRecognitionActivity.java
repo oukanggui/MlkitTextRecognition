@@ -204,7 +204,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
         // step1 对bitmap进行旋转
         Bitmap rotateBitmap = CommonUtil.rotateBitmap(sourceBitmap, rotationDegrees);
         // step2 对bitmap按屏幕宽度进行等比例缩放
-        float scaleRatio = CommonUtil.getRealScreenWidth(this) / sourceBitmap.getWidth();
+        float scaleRatio = CommonUtil.getRealScreenWidth(this) / rotateBitmap.getWidth();
         Bitmap scaleBitmap = CommonUtil.scaleBitmap(rotateBitmap, scaleRatio);
         // step3 对bitmap进行裁剪，需要重新调整裁剪的矩形框
         int bitmapWidth = scaleBitmap.getWidth();
@@ -212,7 +212,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
         float rectScaleHeight = frameView.getFrameHeight() * scaleRatio;
         float cropRectLeft = frameView.getFrameLeft();
         float cropRectTop = bitmapHeight / 2 - rectScaleHeight / 2;
-        float cropRectRight = bitmapWidth - frameView.getFrameRight();
+        float cropRectRight = bitmapWidth - frameView.getFrameMarginRight();
         float cropRectBottom = bitmapHeight / 2 + rectScaleHeight / 2;
         Rect cropRect = new Rect((int) cropRectLeft, (int) cropRectTop, (int) cropRectRight, (int) cropRectBottom);
         return CommonUtil.cropBitmap(scaleBitmap, cropRect);
