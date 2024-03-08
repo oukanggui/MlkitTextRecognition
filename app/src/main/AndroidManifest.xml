@@ -16,16 +16,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MlkitTextRecognition" >
         <activity
-            android:name=".MainActivity"
+            android:name=".MainActivity">
+        </activity>
+        <activity android:name=".QRCodeScanActivity" />
+        <activity android:name=".TextRecognitionActivity"
+            android:theme="@style/FullScreenTheme"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".QRCodeScanActivity" />
-        <activity android:name=".TextRecognitionActivity"
-            android:theme="@style/FullScreenTheme">
         </activity>
     </application>
 
