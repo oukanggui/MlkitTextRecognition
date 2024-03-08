@@ -140,14 +140,13 @@ public class TextRecognitionActivity extends AppCompatActivity {
             CommonUtil.log(TAG, "analyzeImage , bitmap is null !!!!!!!");
             return;
         }
-        Rect cropRect = new Rect((int) frameView.getFrameLeft(), (int) frameView.getFrameTop(), (int) frameView.getFrameRight(), (int) frameView.getFrameBottom());
-        Bitmap cropBitmap = CommonUtil.cropBitmap(CommonUtil.rotateBitmap(bitmap, rotationDegrees), cropRect);
-        InputImage inputImage = InputImage.fromBitmap(cropBitmap, 0);
+        Bitmap resultBitmap = handleBitmap(bitmap, rotationDegrees);
+        InputImage inputImage = InputImage.fromBitmap(resultBitmap, 0);
         TextRecognizer recognizer = TextRecognition.getClient(new ChineseTextRecognizerOptions.Builder().build());
         recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text result) {
-                ivCrop.setImageBitmap(cropBitmap);
+                ivCrop.setImageBitmap(resultBitmap);
                 int blockCount = result.getTextBlocks().size();
                 StringBuffer stringBuffer = new StringBuffer();
                 for (int i = 0; i < blockCount; i++) {
@@ -208,8 +207,14 @@ public class TextRecognitionActivity extends AppCompatActivity {
         float scaleRatio = CommonUtil.getRealScreenWidth(this) / sourceBitmap.getWidth();
         Bitmap scaleBitmap = CommonUtil.scaleBitmap(rotateBitmap, scaleRatio);
         // step3 对bitmap进行裁剪，需要重新调整裁剪的矩形框
-        Rect cropRect = new Rect((int) frameView.getFrameLeft(), (int) frameView.getFrameTop(), (int) frameView.getFrameRight(), (int) frameView.getFrameBottom());
+        int bitmapWidth = scaleBitmap.getWidth();
+        int bitmapHeight = scaleBitmap.getHeight();
+        float rectScaleHeight = frameView.getFrameHeight() * scaleRatio;
+        float cropRectLeft = frameView.getFrameLeft();
+        float cropRectTop = bitmapHeight / 2 - rectScaleHeight / 2;
+        float cropRectRight = bitmapWidth - frameView.getFrameRight();
+        float cropRectBottom = bitmapHeight / 2 + rectScaleHeight / 2;
+        Rect cropRect = new Rect((int) cropRectLeft, (int) cropRectTop, (int) cropRectRight, (int) cropRectBottom);
         return CommonUtil.cropBitmap(scaleBitmap, cropRect);
-
     }
 }
