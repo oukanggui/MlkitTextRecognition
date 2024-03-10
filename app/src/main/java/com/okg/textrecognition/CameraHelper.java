@@ -535,29 +535,38 @@ public class CameraHelper {
      * 打开手电筒
      */
     public void openTorch() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (mCameraManager != null) {
-                try {
-                    mCameraManager.setTorchMode(mCurrentCameraId, true);
-                } catch (CameraAccessException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (mCameraDevice == null || mCameraCaptureSession == null) {
+            return;
         }
+        try {
+            CaptureRequest.Builder flashCaptureRequest = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            //设置开启闪光灯
+            flashCaptureRequest.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+            flashCaptureRequest.addTarget(mSurface);
+            //通道设置新循环捕获请求
+            mCameraCaptureSession.setRepeatingRequest(flashCaptureRequest.build(), null, null);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
      * 关闭手电筒
      */
     public void closeTorch() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (mCameraManager != null) {
-                try {
-                    mCameraManager.setTorchMode(mCurrentCameraId, false);
-                } catch (CameraAccessException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (mCameraDevice == null || mCameraCaptureSession == null) {
+            return;
+        }
+        try {
+            CaptureRequest.Builder flashCaptureRequest = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            //设置开启闪光灯
+            flashCaptureRequest.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+            flashCaptureRequest.addTarget(mSurface);
+            //通道设置新循环捕获请求
+            mCameraCaptureSession.setRepeatingRequest(flashCaptureRequest.build(), null, null);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
         }
     }
 }
