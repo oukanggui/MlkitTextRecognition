@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -33,18 +32,21 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 
 import org.json.JSONObject;
 
-public class TextRecognitionActivity extends AppCompatActivity {
+public class TextRecognitionActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "Mlkit-TextRecognitionActivity";
     private static int CAMERA_PERMISSION_CODE = 100;
 
-    private Button btnTakePicture;
     private FrameLayout textureViewContainer;
     private TextView tvContent;
 
     private ViewFinderView frameView;
-    private ImageView ivCrop;
+    private ImageView ivCrop, ivBack, ivTakePicture, ivInput, ivTorch;
 
     private CameraHelper mCameraHelper;
+    /**
+     * 记录是否打开了闪光灯
+     */
+    private boolean isTorchOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,26 +83,18 @@ public class TextRecognitionActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        btnTakePicture = findViewById(R.id.btn_take_picture);
         tvContent = findViewById(R.id.tv_content);
+        ivTakePicture = findViewById(R.id.iv_take_picture);
+        ivBack = findViewById(R.id.iv_back);
+        ivInput = findViewById(R.id.iv_input);
+        ivTorch = findViewById(R.id.iv_torch);
         frameView = findViewById(R.id.view_frame);
         ivCrop = findViewById(R.id.iv_crop);
-        //textureView = findViewById(R.id.texture_view);
         textureViewContainer = findViewById(R.id.container);
-        btnTakePicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mCameraHelper != null) {
-                    mCameraHelper.takePicture(new CameraHelper.OnTakePictureListener() {
-                        @Override
-                        public void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees) {
-                            CommonUtil.log(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
-                            analyzeImage(bitmap, pictureRotationDegrees);
-                        }
-                    });
-                }
-            }
-        });
+        ivBack.setOnClickListener(this);
+        ivInput.setOnClickListener(this);
+        ivTorch.setOnClickListener(this);
+        ivTakePicture.setOnClickListener(this);
     }
 
     /**
@@ -130,6 +124,45 @@ public class TextRecognitionActivity extends AppCompatActivity {
         return textureView;
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+            case R.id.iv_input:
+                break;
+            case R.id.iv_torch:
+                if (mCameraHelper == null) {
+                    return;
+                }
+                isTorchOpen = !isTorchOpen;
+                if (isTorchOpen) {
+                    mCameraHelper.openTorch();
+                } else {
+                    mCameraHelper.closeTorch();
+                }
+                break;
+            case R.id.iv_take_picture:
+                if (mCameraHelper != null) {
+                    mCameraHelper.takePicture(new CameraHelper.OnTakePictureListener() {
+                        @Override
+                        public void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees) {
+                            CommonUtil.log(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
+                            // 如果打开了手电筒，则拍完照后立即关闭手电筒
+                            if (isTorchOpen && mCameraHelper != null) {
+                                mCameraHelper.closeTorch();
+                                isTorchOpen = false;
+                            }
+                            analyzeImage(bitmap, pictureRotationDegrees);
+                        }
+                    });
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
      * 解析文本
@@ -152,7 +185,7 @@ public class TextRecognitionActivity extends AppCompatActivity {
                     Toast.makeText(TextRecognitionActivity.this, "识别不出内容，请对准拍摄", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                JSONObject jsonObject = OCRHelper.getInstance().parseText(result);
+                JSONObject jsonObject = OCRHelper.getInstance().parseImeiAndSnInfo(result);
                 tvContent.setText(jsonObject.toString());
                 String imei1 = jsonObject.optString(OCRHelper.KEY_IMEI1);
                 String imei2 = jsonObject.optString(OCRHelper.KEY_IMEI2);

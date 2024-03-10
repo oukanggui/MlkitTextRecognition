@@ -50,12 +50,12 @@ public class OCRHelper {
     }
 
     /**
-     * 解析文本
+     * 解析imei及sn序列号信息
      *
      * @param result
      * @return 返回识别的文本信息
      */
-    public JSONObject parseText(Text result) {
+    public JSONObject parseImeiAndSnInfo(Text result) {
         CommonUtil.log(TAG, "parseText: " + result != null ? result.getText() : null);
         int blockCount = result == null ? 0 : result.getTextBlocks().size();
         if (blockCount == 0) {
