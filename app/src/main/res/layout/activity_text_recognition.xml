@@ -44,8 +44,8 @@
     <!--返回按钮-->
     <ImageView
         android:id="@+id/iv_back"
-        android:layout_width="20.5dp"
-        android:layout_height="20.5dp"
+        android:layout_width="25.5dp"
+        android:layout_height="25.5dp"
         android:src="@mipmap/ic_launcher"
         android:scaleType="fitCenter"
         android:padding="5dp"
