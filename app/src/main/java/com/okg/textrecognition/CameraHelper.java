@@ -19,6 +19,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.DisplayMetrics;
@@ -527,6 +528,36 @@ public class CameraHelper {
         if (mCameraBackgroundHandler != null) {
             mCameraBackgroundHandler.removeCallbacksAndMessages(null);
             mCameraBackgroundHandler = null;
+        }
+    }
+
+    /**
+     * 打开手电筒
+     */
+    public void openTorch() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mCameraManager != null) {
+                try {
+                    mCameraManager.setTorchMode(mCurrentCameraId, true);
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 关闭手电筒
+     */
+    public void closeTorch() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mCameraManager != null) {
+                try {
+                    mCameraManager.setTorchMode(mCurrentCameraId, false);
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
