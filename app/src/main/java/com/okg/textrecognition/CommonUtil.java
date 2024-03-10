@@ -1,6 +1,7 @@
 package com.okg.textrecognition;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -9,9 +10,11 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 /**
  * @author oukanggui
@@ -205,5 +208,45 @@ public class CommonUtil {
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             decorView.setSystemUiVisibility(uiOptions);
         }
+    }
+
+    /**
+     * 显示Dialog
+     *
+     * @param context
+     * @param dialog
+     */
+    public static void showDialog(Context context, Dialog dialog) {
+        if (context != null && dialog != null) {
+            if (context instanceof Activity) {
+                Activity activity = (Activity) context;
+                if (!activity.isFinishing() && !activity.isDestroyed()) {
+                    dialog.show();
+                }
+            }
+        }
+    }
+
+    /**
+     * Dialog消失
+     *
+     * @param context
+     * @param dialog
+     */
+    public static void dismissDialog(Context context, Dialog dialog) {
+        if (context != null && dialog != null) {
+            if (context instanceof Activity) {
+                Activity activity = (Activity) context;
+                if (!activity.isFinishing() && !activity.isDestroyed() && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        }
+    }
+
+    public static void showToast(Context context, String msg) {
+        Toast toast = Toast.makeText(context, msg, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
     }
 }

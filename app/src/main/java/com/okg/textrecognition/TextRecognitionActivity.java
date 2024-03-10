@@ -7,18 +7,24 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -77,7 +83,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 setupCamera();
             } else {
-                Toast.makeText(this, "权限被拒绝", Toast.LENGTH_SHORT).show();
+                CommonUtil.showToast(this, "相机权限被拒绝");
             }
         }
     }
@@ -131,6 +137,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 finish();
                 break;
             case R.id.iv_input:
+                showImeiInputDialog();
                 break;
             case R.id.iv_torch:
                 if (mCameraHelper == null) {
@@ -182,7 +189,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 ivCrop.setImageBitmap(resultBitmap);
                 int blockCount = result.getTextBlocks().size();
                 if (blockCount == 0 || TextUtils.isEmpty(result.getText())) {
-                    Toast.makeText(TextRecognitionActivity.this, "识别不出内容，请对准拍摄", Toast.LENGTH_SHORT).show();
+                    CommonUtil.showToast(TextRecognitionActivity.this, "识别不出内容，请对准拍摄");
                     return;
                 }
                 JSONObject jsonObject = OCRHelper.getInstance().parseImeiAndSnInfo(result);
@@ -191,9 +198,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 String imei2 = jsonObject.optString(OCRHelper.KEY_IMEI2);
                 String sn = jsonObject.optString(OCRHelper.KEY_SN);
                 if (TextUtils.isEmpty(imei1) && TextUtils.isEmpty(imei2) && TextUtils.isEmpty(sn)) {
-                    Toast.makeText(TextRecognitionActivity.this,
-                            "没有找到imei/sn信息，请调整拍照角度或范围继续拍摄",
-                            Toast.LENGTH_LONG).show();
+                    CommonUtil.showToast(TextRecognitionActivity.this, "没有找到imei/sn信息，请调整拍照角度或范围继续拍摄");
                 }
             }
         }).addOnCompleteListener(new OnCompleteListener<Text>() {
@@ -237,5 +242,44 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
         float cropRectBottom = bitmapHeight / 2 + rectScaleHeight / 2;
         Rect cropRect = new Rect((int) cropRectLeft, (int) cropRectTop, (int) cropRectRight, (int) cropRectBottom);
         return CommonUtil.cropBitmap(scaleBitmap, cropRect);
+    }
+
+    /**
+     * 显示imei输入框
+     */
+    private void showImeiInputDialog() {
+        Dialog dialog = new Dialog(this, R.style.CommonDialog);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setContentView(R.layout.dialog_input);
+        Window dialogWindow = dialog.getWindow();
+        if (dialogWindow != null) {
+            WindowManager.LayoutParams params = dialogWindow.getAttributes();
+            params.width = CommonUtil.getRealScreenWidth(this);
+            dialogWindow.setGravity(Gravity.BOTTOM);
+            dialogWindow.setAttributes(params);
+        }
+        View ivClose = dialog.findViewById(R.id.iv_close);
+        View btnComplete = dialog.findViewById(R.id.btn_complete);
+        EditText etImei = dialog.findViewById(R.id.et_imei);
+        ivClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CommonUtil.dismissDialog(TextRecognitionActivity.this, dialog);
+            }
+        });
+        btnComplete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String strInputImei = etImei.getText().toString();
+                if (TextUtils.isEmpty(strInputImei)) {
+                    CommonUtil.showToast(TextRecognitionActivity.this, "输入IMEI不能为空");
+                    return;
+                }
+                CommonUtil.dismissDialog(TextRecognitionActivity.this, dialog);
+                // 数据回调
+            }
+        });
+        CommonUtil.showDialog(this, dialog);
     }
 }
