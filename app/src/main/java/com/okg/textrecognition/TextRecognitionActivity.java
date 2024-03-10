@@ -152,22 +152,6 @@ public class TextRecognitionActivity extends AppCompatActivity {
                     Toast.makeText(TextRecognitionActivity.this, "识别不出内容，请对准拍摄", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                StringBuffer stringBuffer = new StringBuffer();
-                for (int i = 0; i < blockCount; i++) {
-                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
-                    Rect rect = textBlock.getBoundingBox();
-                    stringBuffer.append("blockNum: " + i + " ,top=" + rect.top + " ,bottom=" + rect.bottom + " ,centerY=" + rect.centerY() + "\n");
-                    int lineCount = textBlock.getLines().size();
-                    if (lineCount == 0) {
-                        continue;
-                    }
-                    for (int j = 0; j < lineCount; j++) {
-                        Text.Line textLine = textBlock.getLines().get(j);
-                        stringBuffer.append("lineNum: " + j + ", lineText = " + textLine.getText() + "\n");
-                    }
-                    stringBuffer.append("\n");
-                }
-                CommonUtil.log(TAG, "original text = " + stringBuffer.toString());
                 JSONObject jsonObject = OCRHelper.getInstance().parseText(result);
                 tvContent.setText(jsonObject.toString());
                 String imei1 = jsonObject.optString(OCRHelper.KEY_IMEI1);
