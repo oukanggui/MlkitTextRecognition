@@ -141,11 +141,10 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 if (mCameraHelper == null) {
                     return;
                 }
-                isTorchOpen = !isTorchOpen;
                 if (isTorchOpen) {
-                    mCameraHelper.openTorch();
+                    closeTorch();
                 } else {
-                    mCameraHelper.closeTorch();
+                    openTorch();
                 }
                 break;
             case R.id.iv_take_picture:
@@ -155,9 +154,8 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                         public void onTakePicture(Bitmap bitmap, int pictureRotationDegrees, int deviceRotationDegrees) {
                             CommonUtil.log(TAG, "onTakePicture , bitmap = " + bitmap + ", pictureRotationDegrees = " + pictureRotationDegrees + ",deviceRotationDegrees=" + deviceRotationDegrees);
                             // 如果打开了手电筒，则拍完照后立即关闭手电筒
-                            if (isTorchOpen && mCameraHelper != null) {
-                                mCameraHelper.closeTorch();
-                                isTorchOpen = false;
+                            if (isTorchOpen) {
+                                closeTorch();
                             }
                             analyzeImage(bitmap, pictureRotationDegrees);
                         }
@@ -240,6 +238,22 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
         float cropRectBottom = bitmapHeight / 2 + rectScaleHeight / 2;
         Rect cropRect = new Rect((int) cropRectLeft, (int) cropRectTop, (int) cropRectRight, (int) cropRectBottom);
         return CommonUtil.cropBitmap(scaleBitmap, cropRect);
+    }
+
+    private void openTorch() {
+        isTorchOpen = true;
+        ivTorch.setImageResource(R.mipmap.ic_torch_open);
+        if (mCameraHelper != null) {
+            mCameraHelper.openTorch();
+        }
+    }
+
+    private void closeTorch() {
+        isTorchOpen = false;
+        ivTorch.setImageResource(R.mipmap.ic_torch_close);
+        if (mCameraHelper != null) {
+            mCameraHelper.closeTorch();
+        }
     }
 
     /**

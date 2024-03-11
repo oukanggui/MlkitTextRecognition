@@ -17,13 +17,12 @@
             android:textSize="13.5sp"/>
         <ImageView
             android:id="@+id/iv_close"
-            android:layout_width="19dp"
-            android:layout_height="19dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
-            android:padding="4dp"
-            android:layout_marginRight="8dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_marginRight="5dp"
+            android:src="@mipmap/ic_close"
             android:scaleType="fitCenter"/>
     </RelativeLayout>
     <LinearLayout

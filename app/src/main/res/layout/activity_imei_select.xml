@@ -16,12 +16,11 @@
         <!--返回按钮-->
         <ImageView
             android:id="@+id/iv_back"
-            android:layout_width="25.5dp"
-            android:layout_height="25.5dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@mipmap/ic_back"
             android:scaleType="fitCenter"
-            android:padding="5dp"
-            android:layout_marginLeft="7dp"
+            android:layout_marginLeft="6dp"
             android:layout_centerVertical="true"/>
         <TextView
             android:id="@+id/btn_complete"

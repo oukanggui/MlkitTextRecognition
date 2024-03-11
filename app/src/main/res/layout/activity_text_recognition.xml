@@ -44,12 +44,11 @@
     <!--返回按钮-->
     <ImageView
         android:id="@+id/iv_back"
-        android:layout_width="25.5dp"
-        android:layout_height="25.5dp"
-        android:src="@mipmap/ic_launcher"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@mipmap/ic_back"
         android:scaleType="fitCenter"
-        android:padding="5dp"
-        android:layout_marginLeft="7dp"
+        android:layout_marginLeft="6dp"
         android:layout_marginTop="50dp"/>
     <!--底部三个按钮-->
     <RelativeLayout
@@ -58,23 +57,23 @@
         android:layout_gravity="bottom"
         android:layout_marginBottom="62dp">
         <ImageView android:id="@+id/iv_take_picture"
-            android:layout_height="82.5dp"
-            android:layout_width="82.5dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_height="85dp"
+            android:layout_width="85dp"
+            android:src="@mipmap/ic_take_picture"
             android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
         <ImageView android:id="@+id/iv_input"
-            android:layout_height="47dp"
-            android:layout_width="47dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_height="52dp"
+            android:layout_width="52dp"
+            android:src="@mipmap/ic_write"
             android:scaleType="fitCenter"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@id/iv_take_picture"
             android:layout_marginRight="48dp"/>
         <ImageView android:id="@+id/iv_torch"
-            android:layout_height="47dp"
-            android:layout_width="47dp"
-            android:src="@mipmap/ic_launcher"
+            android:layout_height="52dp"
+            android:layout_width="52dp"
+            android:src="@mipmap/ic_torch_close"
             android:scaleType="fitCenter"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@id/iv_take_picture"
