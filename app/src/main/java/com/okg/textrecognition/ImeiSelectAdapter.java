@@ -25,8 +25,6 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
 
     public interface OnItemListener {
         void onItemSelectChange(int position);
-
-        void onImeiTextChange(int position, String newImei);
     }
 
     public ImeiSelectAdapter(List<ImeiSelectBean> imeiList) {
@@ -43,9 +41,9 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //获取当前位置的子项对象
-        ImeiSelectBean imeiSelectBean = imeiList.get(position);
+        final ImeiSelectBean imeiSelectBean = imeiList.get(position);
         //从当前子项对象中获取数据，绑定在viewHolder对象中
-        holder.ivSelect.setImageResource(imeiSelectBean.isSelect ? R.mipmap.ic_launcher : R.mipmap.ic_launcher);
+        holder.ivSelect.setImageResource(imeiSelectBean.isSelect ? R.mipmap.ic_launcher : R.mipmap.ic_close);
         holder.etImei.setText(imeiSelectBean.imei);
         holder.ivSelect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,21 +53,18 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
                 }
             }
         });
-        holder.etImei.addTextChangedListener(new TextWatcher() {
+        holder.mTxtWatcher.buildWatcher(position, imeiSelectBean);
+        /**
+         * RecyclerView 在滑动的时候会使EditText失去焦点，这样可以触发OnFocusChangeListener，
+         * 这样可以更准确的绑定和解绑TxtWatcher
+         */
+        holder.etImei.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                if (mListener != null) {
-                    mListener.onImeiTextChange(holder.getAdapterPosition(), editable.toString());
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    holder.etImei.addTextChangedListener(holder.mTxtWatcher);
+                } else {
+                    holder.etImei.removeTextChangedListener(holder.mTxtWatcher);
                 }
             }
         });
@@ -81,7 +76,8 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
     }
 
     public void setNewData(List<ImeiSelectBean> imeiList) {
-        this.imeiList = imeiList;
+        this.imeiList.clear();
+        this.imeiList.addAll(imeiList);
         notifyDataSetChanged();
     }
 
@@ -93,6 +89,7 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivSelect;
         EditText etImei;
+        private TxtWatcher mTxtWatcher;
 
         public ViewHolder(View view) {
             //父类构造函数
@@ -100,6 +97,33 @@ public class ImeiSelectAdapter extends RecyclerView.Adapter<ImeiSelectAdapter.Vi
             //获取RecyclerView布局的子项布局中的所有控件id
             ivSelect = view.findViewById(R.id.iv_select);
             etImei = view.findViewById(R.id.et_imei);
+            mTxtWatcher = new TxtWatcher();
+        }
+    }
+
+    static class TxtWatcher implements TextWatcher {
+
+        private int mPosition;
+        private ImeiSelectBean bean;
+
+        public void buildWatcher(int position, ImeiSelectBean bean) {
+            this.mPosition = position;
+            this.bean = bean;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            bean.imei = s.toString();
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.okg.textrecognition;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -36,9 +38,12 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class TextRecognitionActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "Mlkit-TextRecognitionActivity";
-    private static int CAMERA_PERMISSION_CODE = 100;
+    private static int CODE_CAMERA_PERMISSION = 100;
+    private static int CODE_REQUEST_IMEI_SELECT_ACTIVITY = 101;
 
     private FrameLayout textureViewContainer;
     private TextView tvContent;
@@ -51,6 +56,8 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
      * 记录是否打开了闪光灯
      */
     private boolean isTorchOpen = false;
+
+    private ArrayList<String> mTextLineList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +84,21 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_CODE) {
+        if (requestCode == CODE_CAMERA_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 setupCamera();
             } else {
                 CommonUtil.showToast(this, "相机权限被拒绝");
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CODE_REQUEST_IMEI_SELECT_ACTIVITY && resultCode == RESULT_OK && data != null) {
+            String imei = data.getStringExtra(Constant.KEY_IMEI);
+            CommonUtil.log(TAG, "onActivityResult == :" + imei);
         }
     }
 
@@ -106,7 +122,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
      */
     private void requestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CODE_CAMERA_PERMISSION);
         } else {
             setupCamera();
         }
@@ -193,9 +209,31 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 String imei1 = jsonObject.optString(OCRHelper.KEY_IMEI1);
                 String imei2 = jsonObject.optString(OCRHelper.KEY_IMEI2);
                 String sn = jsonObject.optString(OCRHelper.KEY_SN);
-                if (TextUtils.isEmpty(imei1) && TextUtils.isEmpty(imei2) && TextUtils.isEmpty(sn)) {
-                    CommonUtil.showToast(TextRecognitionActivity.this, "没有找到imei/sn信息，请调整拍照角度或范围继续拍摄");
+                if (!TextUtils.isEmpty(imei1) || !TextUtils.isEmpty(imei2) || !TextUtils.isEmpty(sn)) {
+                    // 已找到imei/sn信息，则直接返回
+                    return;
                 }
+                CommonUtil.log(TAG, "没有识别找到imei/sn信息，则跳转编辑选择编辑界面");
+                if (mTextLineList == null) {
+                    mTextLineList = new ArrayList<>();
+                }
+                mTextLineList.clear();
+                for (int i = 0; i < blockCount; i++) {
+                    Text.TextBlock textBlock = result.getTextBlocks().get(i);
+                    if (textBlock == null || textBlock.getLines() == null || textBlock.getLines().size() == 0) {
+                        continue;
+                    }
+                    int lineCount = textBlock.getLines().size();
+                    for (int j = 0; j < lineCount; j++) {
+                        String lineText = textBlock.getLines().get(j).getText();
+                        if (!TextUtils.isEmpty(lineText)) {
+                            mTextLineList.add(lineText);
+                        }
+                    }
+                }
+                Intent intent = new Intent(TextRecognitionActivity.this, ImeiSelectActivity.class);
+                intent.putStringArrayListExtra(Constant.KEY_IMEI_LIST, mTextLineList);
+                startActivityForResult(intent, CODE_REQUEST_IMEI_SELECT_ACTIVITY);
             }
         }).addOnCompleteListener(new OnCompleteListener<Text>() {
             @Override
