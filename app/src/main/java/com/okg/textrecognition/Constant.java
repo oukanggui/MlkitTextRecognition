@@ -7,5 +7,7 @@ package com.okg.textrecognition;
  */
 public class Constant {
     public static final String KEY_IMEI_LIST = "keyImeiList";
-    public static final String KEY_IMEI = "keyImei";
+    public static final String KEY_IMEI1 = "keyImei1";
+    public static final String KEY_IMEI2 = "keyImei2";
+    public static final String KEY_SN = "keySn";
 }

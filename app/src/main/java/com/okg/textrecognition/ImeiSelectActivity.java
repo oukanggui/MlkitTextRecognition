@@ -59,7 +59,7 @@ public class ImeiSelectActivity extends AppCompatActivity {
                 }
                 // 回传选择数据并返回上一级页面
                 Intent dataIntent = new Intent();
-                dataIntent.putExtra(Constant.KEY_IMEI, selectImeiStr);
+                dataIntent.putExtra(Constant.KEY_IMEI1, selectImeiStr);
                 setResult(RESULT_OK, dataIntent);
                 finish();
             }

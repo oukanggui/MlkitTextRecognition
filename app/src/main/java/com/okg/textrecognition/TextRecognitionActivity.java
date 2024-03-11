@@ -97,8 +97,9 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CODE_REQUEST_IMEI_SELECT_ACTIVITY && resultCode == RESULT_OK && data != null) {
-            String imei = data.getStringExtra(Constant.KEY_IMEI);
-            CommonUtil.log(TAG, "onActivityResult == :" + imei);
+            String imei1 = data.getStringExtra(Constant.KEY_IMEI1);
+            CommonUtil.log(TAG, "onActivityResult == :" + "imei1 = " + imei1);
+            setResultAndFinish(imei1, null, null);
         }
     }
 
@@ -211,6 +212,7 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 String sn = jsonObject.optString(OCRHelper.KEY_SN);
                 if (!TextUtils.isEmpty(imei1) || !TextUtils.isEmpty(imei2) || !TextUtils.isEmpty(sn)) {
                     // 已找到imei/sn信息，则直接返回
+                    setResultAndFinish(imei1, imei2, sn);
                     return;
                 }
                 CommonUtil.log(TAG, "没有识别找到imei/sn信息，则跳转编辑选择编辑界面");
@@ -328,8 +330,25 @@ public class TextRecognitionActivity extends AppCompatActivity implements View.O
                 }
                 CommonUtil.dismissDialog(TextRecognitionActivity.this, dialog);
                 // 数据回调
+                setResultAndFinish(strInputImei, null, null);
             }
         });
         CommonUtil.showDialog(this, dialog);
+    }
+
+    /**
+     * 设置Result并回调结果返回上一级页面
+     *
+     * @param imei1
+     * @param imei2
+     * @param sn
+     */
+    private void setResultAndFinish(String imei1, String imei2, String sn) {
+        Intent dataIntent = new Intent();
+        dataIntent.putExtra(Constant.KEY_IMEI1, imei1);
+        dataIntent.putExtra(Constant.KEY_IMEI2, imei2);
+        dataIntent.putExtra(Constant.KEY_SN, sn);
+        setResult(RESULT_OK, dataIntent);
+        finish();
     }
 }
